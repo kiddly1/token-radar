@@ -120,6 +120,10 @@ tbody tr:hover { background: var(--panel-2); }
 .watch { color: var(--amber); font-size: 11px; border: 1px solid var(--amber); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: 1px; }
 .bar { display: inline-block; height: 8px; background: var(--amber); border-radius: 4px; vertical-align: middle; margin-right: 8px; opacity: 0.85; }
 .empty { color: var(--muted); padding: 24px; text-align: center; }
+.verdict { font-size: 11px; border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: 1px; font-weight: 700; }
+.verdict.farm { color: var(--teal); border: 1px solid var(--teal); }
+.verdict.thin { color: var(--amber); border: 1px solid var(--amber); }
+.verdict.skip { color: var(--red); border: 1px solid var(--red); }
 
 .model { margin-top: 28px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; }
 .model h2 { margin: 0 0 4px; font-size: 20px; }
@@ -139,6 +143,13 @@ tbody tr:hover { background: var(--panel-2); }
 .fine { color: var(--muted); font-size: 13px; }
 .multiples { font-size: 13px; }
 .multiples th, .multiples td { padding: 5px 8px; }
+#curve-chart { margin: 6px 0 4px; }
+#curve-chart svg { width: 100%; height: auto; display: block; }
+#curve-chart .axis { stroke: var(--line); stroke-width: 1; }
+#curve-chart .tick { fill: var(--muted); font-size: 10px; }
+#curve-chart .dot { fill: var(--teal); opacity: 0.75; }
+#curve-chart .fitline { stroke: var(--amber); stroke-width: 2; fill: none; }
+#curve-chart .axis-label { fill: var(--muted); font-size: 11px; }
 
 dialog {
   background: var(--panel-2);

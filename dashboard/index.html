@@ -12,7 +12,7 @@
   <div class="radar-mark" aria-hidden="true"><span></span></div>
   <div>
     <h1>Token Radar</h1>
-    <p class="lede">Every protocol the snapshot records with no token, ranked by what its token would be worth if it traded like its live peers.</p>
+    <p class="lede">Every protocol the snapshot records with no token, ranked by what its token would be worth if it traded like its live peers — priced off a size curve fitted on the 92 tokens that already trade, and tested out of sample before it was trusted.</p>
     <p class="meta" id="meta">Snapshot: loading…</p>
   </div>
 </header>
@@ -43,7 +43,7 @@
           <th data-sort="tvl_usd" class="num">TVL</th>
           <th data-sort="change_7d" class="num">7d</th>
           <th data-sort="age_days" class="num">Age</th>
-          <th data-sort="multiple" class="num">Multiple</th>
+          <th data-sort="multiple" class="num">Curve multiple</th>
           <th data-sort="implied_value_usd" class="num">Implied value</th>
         </tr>
       </thead>
@@ -55,23 +55,34 @@
 
 <section class="model" id="model">
   <h2>How the number is built</h2>
-  <p class="formula">implied value = TVL &times; category multiple &times; growth &times; maturity</p>
+  <p class="formula" id="formula">implied value = curve(TVL) &times; growth</p>
   <div class="model-grid">
     <div>
-      <h3>Category multiple</h3>
-      <p>The median market-cap / TVL ratio of the live-token protocols in the same category, computed from this snapshot. Fewer than 3 live peers in a category? The overall live median is used instead. Multiples are clamped to 0.05–1.50.</p>
-      <table class="multiples" id="multiples">
-        <thead><tr><th>Category</th><th class="num">Multiple</th><th class="num">Live peers</th></tr></thead>
+      <h3>The fitted size curve</h3>
+      <p id="curve-text">Fitted on the snapshot's own traded protocols.</p>
+      <div id="curve-chart" aria-label="Size curve chart"></div>
+      <p class="fine">Each dot is a token that already trades: its TVL against its market cap. The line is the fitted curve. Big protocols trade at a smaller multiple of TVL than small ones — the curve bends down, so a $2B vault is not priced like ten $200M vaults.</p>
+      <h3>Category offsets</h3>
+      <p>Each category's mean miss off the curve, shrunk toward zero by n/(n+5): thin categories barely move the curve, deep ones move it most.</p>
+      <table class="multiples" id="offsets">
+        <thead><tr><th>Category</th><th class="num">Offset (log10)</th><th class="num">Live peers</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
     <div>
-      <h3>Growth &amp; maturity</h3>
+      <h3>Tested out of sample — before it was trusted</h3>
+      <table class="multiples" id="backtest">
+        <thead><tr><th>Holdout</th><th class="num">v1 model</th><th class="num">This model</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <p class="fine" id="backtest-note"></p>
+      <h3>Growth</h3>
       <p><strong>Growth</strong> is the 7-day TVL change, clamped to −60%…+120% and given half weight: 1 + change &times; 0.5. A protocol shrinking fast scores 0.70; one growing 120% scores 1.60.</p>
-      <p><strong>Maturity</strong> rises with how long the protocol has run with no token: 0.60 at launch, 1.00 after 3 years. Age unknown means 365 days.</p>
       <h3>What counts as pre-token</h3>
       <p>The snapshot records no token when market cap, Gecko id and symbol are all empty. Wrapped, staked, bridged and exchange products are excluded — their receipt tokens already trade. We say “records no token”, never “has no token”: the snapshot is not proof.</p>
-      <p class="fine">Board: all 40 watchlist protocols plus every eligible protocol below the $50M floor, ranked by implied value. Live-token protocols are set aside on the second tab.</p>
+      <h3>Farm plan verdicts</h3>
+      <p>Every plan is costed in dollars (6 transactions at the chain's typical gas, plus about $2 in swap and bridge fees) and netted against the low end of the value band at a 0.001% farmer share. <strong>FARM</strong> clears $50 net, <strong>THIN</strong> covers its cost, <strong>SKIP</strong> costs more than the low-end case is worth.</p>
+      <p class="fine">Board: all 40 watchlist protocols plus every other eligible protocol — 198 rows. Live-token protocols are set aside on the second tab. The value band is the middle 50% of the curve's misses on traded tokens: half of them landed inside it.</p>
     </div>
   </div>
 </section>
