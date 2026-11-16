@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Token Radar — pre-token protocols ranked by implied value</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="radar-mark" aria-hidden="true"><span></span></div>
+  <div>
+    <h1>Token Radar</h1>
+    <p class="lede">Every protocol the snapshot records with no token, ranked by what its token would be worth if it traded like its live peers.</p>
+    <p class="meta" id="meta">Snapshot: loading…</p>
+  </div>
+</header>
+
+<section class="stats" id="stats" aria-label="Board summary"></section>
+
+<section class="controls">
+  <label class="search">Search
+    <input id="q" type="search" placeholder="name, slug or category…" autocomplete="off">
+  </label>
+  <label>Category
+    <select id="category"><option value="">All categories</option></select>
+  </label>
+  <div class="tabs" role="tablist" aria-label="Board view">
+    <button id="tab-pre" role="tab" aria-selected="true">Pre-token board</button>
+    <button id="tab-live" role="tab" aria-selected="false">Already trading</button>
+  </div>
+</section>
+
+<main>
+  <p class="hint" id="hint"></p>
+  <div class="table-wrap">
+    <table id="board">
+      <thead>
+        <tr>
+          <th data-sort="rank" class="num sorted">Rank</th>
+          <th data-sort="name">Protocol</th>
+          <th data-sort="tvl_usd" class="num">TVL</th>
+          <th data-sort="change_7d" class="num">7d</th>
+          <th data-sort="age_days" class="num">Age</th>
+          <th data-sort="multiple" class="num">Multiple</th>
+          <th data-sort="implied_value_usd" class="num">Implied value</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <p class="empty" id="empty" hidden>No protocol matches this filter.</p>
+</main>
+
+<section class="model" id="model">
+  <h2>How the number is built</h2>
+  <p class="formula">implied value = TVL &times; category multiple &times; growth &times; maturity</p>
+  <div class="model-grid">
+    <div>
+      <h3>Category multiple</h3>
+      <p>The median market-cap / TVL ratio of the live-token protocols in the same category, computed from this snapshot. Fewer than 3 live peers in a category? The overall live median is used instead. Multiples are clamped to 0.05–1.50.</p>
+      <table class="multiples" id="multiples">
+        <thead><tr><th>Category</th><th class="num">Multiple</th><th class="num">Live peers</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div>
+      <h3>Growth &amp; maturity</h3>
+      <p><strong>Growth</strong> is the 7-day TVL change, clamped to −60%…+120% and given half weight: 1 + change &times; 0.5. A protocol shrinking fast scores 0.70; one growing 120% scores 1.60.</p>
+      <p><strong>Maturity</strong> rises with how long the protocol has run with no token: 0.60 at launch, 1.00 after 3 years. Age unknown means 365 days.</p>
+      <h3>What counts as pre-token</h3>
+      <p>The snapshot records no token when market cap, Gecko id and symbol are all empty. Wrapped, staked, bridged and exchange products are excluded — their receipt tokens already trade. We say “records no token”, never “has no token”: the snapshot is not proof.</p>
+      <p class="fine">Board: all 40 watchlist protocols plus every eligible protocol below the $50M floor, ranked by implied value. Live-token protocols are set aside on the second tab.</p>
+    </div>
+  </div>
+</section>
+
+<dialog id="detail">
+  <form method="dialog"><button class="close" aria-label="Close">×</button></form>
+  <div id="detail-body"></div>
+</dialog>
+
+<script src="../data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
