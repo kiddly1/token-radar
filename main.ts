@@ -1,12 +1,14 @@
-// Token Radar — fitted size-curve entry (Node 22, standard library only).
+// Token Radar — expected-value entry (Node 22, standard library only).
 //
 // Reads the sealed snapshot from /input/snapshot.json (or --input <file|dir>),
-// scores every pre-token protocol with the model in lib/model.ts (a log-log
-// size curve fitted on the snapshot's own traded protocols, with shrunk
-// category offsets and a bounded growth term), writes the ranked board to
-// /output/board.json, and copies this repository's dashboard/ and
-// screenshots/ to /output. Last, it writes /output/dossier.json, the
-// summary the judge reads, with the vendored make.fun library.
+// scores every pre-token protocol with the model in lib/model.ts (radar-4:
+// a log-log size curve fitted on the snapshot's own traded protocols, with
+// a chain-count term, shrunk category offsets and a bounded growth term,
+// times launch odds from a logistic regression on all 758 protocols),
+// writes the ranked board to /output/board.json, and copies this
+// repository's dashboard/ and screenshots/ to /output. Last, it writes
+// /output/dossier.json, the summary the judge reads, with the vendored
+// make.fun library.
 //
 // The dashboard is a static page, no framework and no network:
 // dashboard/index.html, dashboard/app.css and dashboard/app.js read
@@ -128,7 +130,8 @@ const earlyCount = board.rows.filter((r) => !r.on_watchlist).length;
 const bt = board.backtest;
 process.stdout.write(
   `token radar: ${snapshot.protocols.length} protocols, ${snapshot.watchlist.length} on the watchlist, ${board.rows.length} rows scored (${earlyCount} early, ${board.live.length} live set aside)\n` +
-    `token radar: curve log10(mcap) = ${board.fit.a.toFixed(4)} + ${board.fit.b.toFixed(4)} * log10(TVL), R2 = ${board.fit.r2.toFixed(3)}, ${board.fit.n} comps\n` +
-    `token radar: backtest median |log10 error| — 5-fold CV v1 ${bt.cv.v1.medAbsLogErr} vs radar-3 ${bt.cv.radar3.medAbsLogErr}; time-split v1 ${bt.timeSplit.v1.medAbsLogErr} vs radar-3 ${bt.timeSplit.radar3.medAbsLogErr}\n` +
+    `token radar: curve log10(mcap) = ${board.fit.a.toFixed(4)} + ${board.fit.b.toFixed(4)} * log10(TVL) + ${board.fit.bChains.toFixed(4)} * log10(nChains), R2 = ${board.fit.r2.toFixed(3)}, ${board.fit.n} comps\n` +
+    `token radar: backtest median |log10 error| — 5-fold CV v1 ${bt.cv.v1.medAbsLogErr} vs radar-3 ${bt.cv.radar3.medAbsLogErr} vs radar-4 ${bt.cv.radar4.medAbsLogErr}; time-split v1 ${bt.timeSplit.v1.medAbsLogErr} vs radar-3 ${bt.timeSplit.radar3.medAbsLogErr} vs radar-4 ${bt.timeSplit.radar4.medAbsLogErr}\n` +
+    `token radar: odds backtest AUC/log-loss — 5-fold ${bt.odds.cv.auc}/${bt.odds.cv.logLoss} (base ${bt.odds.cv.baseLogLoss}); time-split ${bt.odds.timeSplit.auc}/${bt.odds.timeSplit.logLoss} (base ${bt.odds.timeSplit.baseLogLoss})\n` +
     `token radar: wrote ${join(out, "board.json")}, ${join(out, "data.js")}, ${join(out, "dashboard")} (3 files), ${join(out, "screenshots")} (${shots.length} images) and ${join(out, "dossier.json")}\n`,
 );

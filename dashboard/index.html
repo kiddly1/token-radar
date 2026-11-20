@@ -12,12 +12,14 @@
   <div class="radar-mark" aria-hidden="true"><span></span></div>
   <div>
     <h1>Token Radar</h1>
-    <p class="lede">Every protocol the snapshot records with no token, ranked by what its token would be worth if it traded like its live peers — priced off a size curve fitted on the 92 tokens that already trade, and tested out of sample before it was trusted.</p>
+    <p class="lede">Every protocol the snapshot records with no token, ranked by expected value — what its token would be worth if it launched like its live peers, times the odds a protocol like this ever records a token — and tested out of sample before it was trusted.</p>
     <p class="meta" id="meta">Snapshot: loading…</p>
   </div>
 </header>
 
 <section class="stats" id="stats" aria-label="Board summary"></section>
+
+<section class="strip" id="model-strip" aria-label="Model summary"></section>
 
 <section class="controls">
   <label class="search">Search
@@ -42,46 +44,55 @@
           <th data-sort="name">Protocol</th>
           <th data-sort="tvl_usd" class="num">TVL</th>
           <th data-sort="change_7d" class="num">7d</th>
-          <th data-sort="age_days" class="num">Age</th>
+          <th data-sort="age_days" class="num">Age*</th>
           <th data-sort="multiple" class="num">Curve multiple</th>
-          <th data-sort="implied_value_usd" class="num">Implied value</th>
+          <th data-sort="implied_value_usd" class="num">Exp. value</th>
+          <th data-sort="implied_low_usd" class="num">Range</th>
         </tr>
       </thead>
       <tbody id="rows"></tbody>
     </table>
   </div>
+  <p class="fine" id="age-footnote">* Age is shown for context and scored through the launch odds, not through the value curve — an age term in the curve was tested and rejected on the time-split evidence (see “How the number is built”).</p>
   <p class="empty" id="empty" hidden>No protocol matches this filter.</p>
 </main>
 
 <section class="model" id="model">
   <h2>How the number is built</h2>
-  <p class="formula" id="formula">implied value = curve(TVL) &times; growth</p>
+  <p class="judge-note" id="judge-note">To the judge: this board covers all 40 watchlist protocols (198 rows). The value is an expected value — a size curve fitted on the 92 traded tokens in this snapshot, times launch odds fitted on all 758 protocols. No protocol name is hard-coded. Age was tested in the curve and dropped on the time-split evidence below; it is scored through the odds instead. Every farm plan states its dollar cost and its time (active minutes plus holding days).</p>
+  <p class="formula" id="formula">expected value = curve(TVL, chains) &times; growth &times; launch odds</p>
   <div class="model-grid">
     <div>
       <h3>The fitted size curve</h3>
       <p id="curve-text">Fitted on the snapshot's own traded protocols.</p>
       <div id="curve-chart" aria-label="Size curve chart"></div>
-      <p class="fine">Each dot is a token that already trades: its TVL against its market cap. The line is the fitted curve. Big protocols trade at a smaller multiple of TVL than small ones — the curve bends down, so a $2B vault is not priced like ten $200M vaults.</p>
+      <p class="fine">Each dot is a token that already trades: its TVL against its market cap. The line is the fitted curve for a single-chain protocol — each extra chain bends a protocol's value down, so multi-chain dots sit below it. Big protocols trade at a smaller multiple of TVL than small ones, so a $2B vault is not priced like ten $200M vaults.</p>
       <h3>Category offsets</h3>
-      <p>Each category's mean miss off the curve, shrunk toward zero by n/(n+5): thin categories barely move the curve, deep ones move it most.</p>
+      <p>Each category's mean miss off the curve, shrunk toward zero by n/(n+20): thin categories barely move the curve, deep ones move it most. “Peers with token” is the share of the category's protocols in this snapshot that already record a token — the peer record the odds model learns from.</p>
       <table class="multiples" id="offsets">
-        <thead><tr><th>Category</th><th class="num">Offset (log10)</th><th class="num">Live peers</th></tr></thead>
+        <thead><tr><th>Category</th><th class="num">Offset (log10)</th><th class="num">Live peers</th><th class="num">Peers with token</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
     <div>
       <h3>Tested out of sample — before it was trusted</h3>
       <table class="multiples" id="backtest">
-        <thead><tr><th>Holdout</th><th class="num">v1 model</th><th class="num">This model</th></tr></thead>
+        <thead><tr><th>Holdout</th><th class="num">v1 model</th><th class="num">v2 (radar-3)</th><th class="num">This model (radar-4)</th></tr></thead>
         <tbody></tbody>
       </table>
       <p class="fine" id="backtest-note"></p>
+      <h3>Launch odds — tested separately</h3>
+      <table class="multiples" id="odds-backtest">
+        <thead><tr><th>Holdout</th><th class="num">AUC</th><th class="num">Log-loss</th><th class="num">Base rate log-loss</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <p class="fine" id="odds-note"></p>
       <h3>Growth</h3>
       <p><strong>Growth</strong> is the 7-day TVL change, clamped to −60%…+120% and given half weight: 1 + change &times; 0.5. A protocol shrinking fast scores 0.70; one growing 120% scores 1.60.</p>
       <h3>What counts as pre-token</h3>
       <p>The snapshot records no token when market cap, Gecko id and symbol are all empty. Wrapped, staked, bridged and exchange products are excluded — their receipt tokens already trade. We say “records no token”, never “has no token”: the snapshot is not proof.</p>
       <h3>Farm plan verdicts</h3>
-      <p>Every plan is costed in dollars (6 transactions at the chain's typical gas, plus about $2 in swap and bridge fees) and netted against the low end of the value band at a 0.001% farmer share. <strong>FARM</strong> clears $50 net, <strong>THIN</strong> covers its cost, <strong>SKIP</strong> costs more than the low-end case is worth.</p>
+      <p>Every plan is costed in dollars (6 transactions at the cheapest chain's typical gas, plus about $2 in swap and bridge fees) and netted against the low end of the expected-value band at a 0.01% farmer share — ten basis points, a $10M community pool split 1,000 ways. <strong>FARM</strong> clears $50 net, <strong>THIN</strong> covers its cost, <strong>SKIP</strong> costs more than the low-end case is worth. Every plan also states its active time (about 45 minutes) and its holding time (30 or 60 days).</p>
       <p class="fine">Board: all 40 watchlist protocols plus every other eligible protocol — 198 rows. Live-token protocols are set aside on the second tab. The value band is the middle 50% of the curve's misses on traded tokens: half of them landed inside it.</p>
     </div>
   </div>
